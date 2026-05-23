@@ -3,8 +3,6 @@ version: "3.9"
 networks:
   coolify:
     external: true
-  internal:
-    driver: bridge
 
 services:
   backend:
@@ -20,7 +18,6 @@ services:
       FIRST_ADMIN_PASSWORD: ${FIRST_ADMIN_PASSWORD}
       APP_ENV: production
     networks:
-      - internal
       - coolify
     restart: unless-stopped
     command: ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
@@ -32,7 +29,6 @@ services:
     depends_on:
       - backend
     networks:
-      - internal
       - coolify
     expose:
       - "80"
