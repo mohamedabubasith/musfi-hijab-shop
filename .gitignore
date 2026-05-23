@@ -19,3 +19,4 @@ backend/.env
 CLAUDE.md
 .claude/*
 .claude/settings.local.json
+.vscode

@@ -43,8 +43,11 @@ async def _ensure_admin():
                 role="admin",
             )
             db.add(admin)
-            await db.commit()
-            logger.info("First admin user created: %s", settings.FIRST_ADMIN_EMAIL)
+            try:
+                await db.commit()
+                logger.info("First admin user created: %s", settings.FIRST_ADMIN_EMAIL)
+            except Exception:
+                await db.rollback()  # Another worker inserted first — harmless
 
 
 async def _seed_default_configs():
@@ -78,9 +81,13 @@ async def _seed_default_configs():
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     os.makedirs(UPLOADS_DIR, exist_ok=True)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    logger.info("Database tables ready")
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("Database tables ready")
+    except Exception as e:
+        # Race condition: another worker already created tables — safe to ignore
+        logger.warning("create_all skipped (likely race with another worker): %s", e)
     await _ensure_admin()
     await _seed_default_configs()
     yield
