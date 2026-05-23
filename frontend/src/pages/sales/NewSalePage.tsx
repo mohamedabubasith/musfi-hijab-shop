@@ -36,6 +36,8 @@ export default function NewSalePage() {
   const [deliveryPhone, setDeliveryPhone] = useState("");
   const [confirmed, setConfirmed] = useState<string | null>(null);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [nameError, setNameError] = useState(false);
+  const [addressError, setAddressError] = useState(false);
   const skuPrefix = getSkuPrefix();
 
   const { data: stockData } = useStock({ search, page_size: 12 });
@@ -69,6 +71,8 @@ export default function NewSalePage() {
 
   const handleSubmit = async () => {
     if (cart.length === 0) { toast.error(t("sales.empty_cart")); return; }
+    if (!customerName.trim()) { setNameError(true); return; }
+    if (isDelivery && !deliveryAddress.trim()) { setAddressError(true); return; }
     try {
       const res = await createSale.mutateAsync({
         customer_name: customerName || undefined,
@@ -275,12 +279,14 @@ export default function NewSalePage() {
 
               {/* Customer */}
               <div className="space-y-1.5">
-                <Label className="text-xs">{t("sales.customer")} ({t("common.optional")})</Label>
+                <Label className="text-xs">{t("sales.customer")} <span className="text-destructive">*</span></Label>
                 <Input
                   placeholder={t("sales.walk_in")}
                   value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
+                  onChange={(e) => { setCustomerName(e.target.value); if (e.target.value.trim()) setNameError(false); }}
+                  className={nameError ? "border-destructive" : ""}
                 />
+                {nameError && <p className="text-xs text-destructive">{t("common.required")}</p>}
               </div>
 
               {/* Payment */}
@@ -334,7 +340,15 @@ export default function NewSalePage() {
               <AnimatePresence>
                 {isDelivery && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="space-y-2 overflow-hidden">
-                    <Input placeholder={t("deliveries.address")} value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)} />
+                    <div className="space-y-1">
+                      <Input
+                        placeholder={`${t("deliveries.address")} *`}
+                        value={deliveryAddress}
+                        onChange={(e) => { setDeliveryAddress(e.target.value); if (e.target.value.trim()) setAddressError(false); }}
+                        className={addressError ? "border-destructive" : ""}
+                      />
+                      {addressError && <p className="text-xs text-destructive">{t("sales.address_required")}</p>}
+                    </div>
                     <Input placeholder={t("deliveries.phone")} value={deliveryPhone} onChange={(e) => setDeliveryPhone(e.target.value)} />
                   </motion.div>
                 )}

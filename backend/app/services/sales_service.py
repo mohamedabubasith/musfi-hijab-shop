@@ -15,7 +15,6 @@ async def generate_invoice_number(db: AsyncSession) -> str:
     result = await db.execute(
         select(func.count()).select_from(Sale).where(
             extract("year", Sale.sale_date) == year,
-            Sale.deleted_at == None,
         )
     )
     count = result.scalar() or 0

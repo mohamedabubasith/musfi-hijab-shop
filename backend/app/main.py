@@ -1,7 +1,9 @@
 import logging
+import traceback
 import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -145,6 +147,12 @@ app.include_router(seed_router, prefix=PREFIX)
 
 # Serve uploaded images
 app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
+
+
+@app.exception_handler(Exception)
+async def _unhandled_exception(request: Request, exc: Exception):
+    logger.error("Unhandled exception: %s\n%s", exc, traceback.format_exc())
+    return JSONResponse(status_code=500, content={"detail": str(exc), "type": type(exc).__name__})
 
 
 @app.get("/health")

@@ -38,7 +38,7 @@ function DeliveryCard({ delivery }: { delivery: Delivery }) {
       </div>
       <p className="text-xs text-muted-foreground line-clamp-2">{delivery.address}</p>
       {delivery.expected_date && (
-        <p className="text-xs text-muted-foreground">Expected: {delivery.expected_date}</p>
+        <p className="text-xs text-muted-foreground">{t("deliveries.expected_date")}: {delivery.expected_date}</p>
       )}
       <Select
         value={delivery.status}

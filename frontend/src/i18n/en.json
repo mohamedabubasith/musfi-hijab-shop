@@ -138,7 +138,9 @@
     "total_count": "{{count}} total sales",
     "showing": "Showing",
     "revenue": "Revenue",
-    "search_sales": "Search by invoice or customer..."
+    "search_sales": "Search by invoice or customer...",
+    "customer_required": "Customer name is required for delivery",
+    "address_required": "Delivery address is required"
   },
   "deliveries": {
     "title": "Deliveries",
