@@ -17,3 +17,5 @@ backend/uploads/
 !frontend/public/**
 backend/.env
 CLAUDE.md
+.claude/*
+.claude/settings.local.json
