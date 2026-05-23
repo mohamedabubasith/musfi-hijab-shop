@@ -1,0 +1,19 @@
+# Environment
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads (user data, not source)
+backend/uploads/
+
+# Screenshots / local assets
+*.png
+*.jpg
+*.jpeg
+!frontend/public/**
+backend/.env
+CLAUDE.md

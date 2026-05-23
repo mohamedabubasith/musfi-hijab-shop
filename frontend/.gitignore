@@ -1,0 +1,22 @@
+# Build output
+dist/
+dist-ssr/
+
+# Dependencies
+node_modules/
+
+# Vite cache
+.vite/
+
+# Local env
+.env
+.env.local
+.env.*.local
+
+# Editor
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln

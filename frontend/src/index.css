@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* ── Musfi Hijab — Light mode (warm ivory + dark gold) ── */
+  :root {
+    --background: 42 30% 97%;        /* warm ivory #F9F6F0 */
+    --foreground: 36 55% 9%;         /* deep charcoal #1E1508 */
+    --card: 0 0% 100%;
+    --card-foreground: 36 55% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 36 55% 9%;
+    --primary: 42 65% 35%;           /* dark gold #8A6520 — readable on ivory ~6:1 */
+    --primary-foreground: 42 80% 96%; /* cream white on dark gold button */
+    --secondary: 42 40% 92%;         /* pale gold tint */
+    --secondary-foreground: 36 55% 9%;
+    --muted: 42 25% 93%;             /* warm light muted */
+    --muted-foreground: 36 20% 40%;  /* readable warm gray */
+    --accent: 42 40% 92%;
+    --accent-foreground: 36 55% 9%;
+    --destructive: 0 84% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 42 30% 86%;            /* soft warm border */
+    --input: 42 30% 86%;
+    --ring: 42 65% 35%;              /* dark gold focus ring */
+    --radius: 0.75rem;
+  }
+
+  /* ── Musfi Hijab — Dark mode (rich black + gold) ── */
+  .dark {
+    --background: 36 28% 5%;         /* near-black #0E0C08 */
+    --foreground: 42 60% 90%;        /* warm cream #F5EDDA */
+    --card: 36 28% 9%;               /* slightly lifted #1A1510 */
+    --card-foreground: 42 60% 90%;
+    --popover: 36 28% 9%;
+    --popover-foreground: 42 60% 90%;
+    --primary: 42 57% 54%;           /* same logo gold */
+    --primary-foreground: 36 60% 6%;
+    --secondary: 36 28% 13%;         /* dark warm surface #222018 */
+    --secondary-foreground: 42 60% 90%;
+    --muted: 36 28% 13%;
+    --muted-foreground: 36 28% 52%;  /* dimmed warm gray */
+    --accent: 36 28% 13%;
+    --accent-foreground: 42 60% 90%;
+    --destructive: 0 63% 40%;
+    --destructive-foreground: 42 60% 90%;
+    --border: 36 28% 18%;            /* subtle dark border #302618 */
+    --input: 36 28% 18%;
+    --ring: 42 57% 54%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+/* Login page gradient — gold to deep black (Musfi brand) */
+.gradient-bg {
+  background: linear-gradient(135deg, #3D2B0A 0%, #1A1208 50%, #0D0A06 100%);
+}
+
+/* Animated dot pattern */
+.dot-pattern {
+  background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px);
+  background-size: 24px 24px;
+  animation: moveDots 20s linear infinite;
+}
+
+@keyframes moveDots {
+  0% { background-position: 0 0; }
+  100% { background-position: 48px 48px; }
+}
