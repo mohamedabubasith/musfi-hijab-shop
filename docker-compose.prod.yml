@@ -18,7 +18,6 @@ services:
       FRONTEND_URL: ${FRONTEND_URL}
       FIRST_ADMIN_EMAIL: ${FIRST_ADMIN_EMAIL}
       FIRST_ADMIN_PASSWORD: ${FIRST_ADMIN_PASSWORD}
-      EXTRA_CORS_ORIGINS: ${EXTRA_CORS_ORIGINS:-}
       APP_ENV: production
     networks:
       - internal
@@ -30,8 +29,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:
-        VITE_API_URL: ${VITE_API_URL}
     depends_on:
       - backend
     networks:
