@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
 import { PageWrapper } from "@/components/layout/PageWrapper";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useUsers, useCreateUser, useToggleUserActive } from "@/api/hooks";
 
 const ROLE_COLORS: Record<string, string> = {
@@ -23,7 +24,7 @@ export default function UsersPage() {
   const create = useCreateUser();
   const toggle = useToggleUserActive();
   const [formOpen, setFormOpen] = useState(false);
-  const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<{ name: string; email: string; phone: string; password: string; role: string }>();
+  const { register, handleSubmit, reset, control, formState: { isSubmitting, errors } } = useForm<{ name: string; email: string; phone: string; password: string; role: string }>();
 
   const onSubmit = async (data: { name: string; email: string; phone: string; password: string; role: string }) => {
     await create.mutateAsync(data);
@@ -84,19 +85,48 @@ export default function UsersPage() {
         <DialogContent>
           <DialogHeader><DialogTitle>{t("users.add_user")}</DialogTitle></DialogHeader>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-            <div className="space-y-1"><Label>{t("users.name")} *</Label><Input {...register("name", { required: true })} /></div>
-            <div className="space-y-1"><Label>{t("users.email")} *</Label><Input type="email" {...register("email", { required: true })} /></div>
-            <div className="space-y-1"><Label>{t("users.phone")}</Label><Input {...register("phone")} /></div>
-            <div className="space-y-1"><Label>Password *</Label><Input type="password" {...register("password", { required: true })} /></div>
+            <div className="space-y-1">
+              <Label>{t("users.name")} *</Label>
+              <Input {...register("name", { required: true })} className={errors.name ? "border-destructive" : ""} />
+              {errors.name && <p className="text-xs text-destructive">{t("common.required")}</p>}
+            </div>
+            <div className="space-y-1">
+              <Label>{t("users.email")} *</Label>
+              <Input type="email" {...register("email", { required: true })} className={errors.email ? "border-destructive" : ""} />
+              {errors.email && <p className="text-xs text-destructive">{t("common.required")}</p>}
+            </div>
+            <div className="space-y-1">
+              <Label>{t("users.phone")}</Label>
+              <Input {...register("phone")} />
+            </div>
+            <div className="space-y-1">
+              <Label>{t("users.password")} *</Label>
+              <Input type="password" {...register("password", { required: true, minLength: 8 })} className={errors.password ? "border-destructive" : ""} />
+              {errors.password?.type === "required" && <p className="text-xs text-destructive">{t("common.required")}</p>}
+              {errors.password?.type === "minLength" && <p className="text-xs text-destructive">{t("auth.reset_invalid_length")}</p>}
+            </div>
             <div className="space-y-1">
               <Label>{t("users.role")} *</Label>
-              <select className="flex h-10 w-full rounded-md border border-input bg-background text-foreground px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" {...register("role", { required: true })}>
-                <option value="admin">{t("users.roles.admin")}</option>
-                <option value="sales">{t("users.roles.sales")}</option>
-                <option value="stock_manager">{t("users.roles.stock_manager")}</option>
-              </select>
+              <Controller
+                name="role"
+                control={control}
+                rules={{ required: true }}
+                defaultValue="sales"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className={errors.role ? "border-destructive" : ""}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">{t("users.roles.admin")}</SelectItem>
+                      <SelectItem value="sales">{t("users.roles.sales")}</SelectItem>
+                      <SelectItem value="stock_manager">{t("users.roles.stock_manager")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
-            <div className="flex gap-2 justify-end">
+            <div className="flex gap-2 justify-end pt-2">
               <Button type="button" variant="outline" onClick={() => setFormOpen(false)}>{t("common.cancel")}</Button>
               <Button type="submit" disabled={isSubmitting}>{t("common.save")}</Button>
             </div>

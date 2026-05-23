@@ -37,7 +37,8 @@
     "reset_success_body": "Your password has been changed. You can now log in.",
     "reset_go_login": "Go to Login",
     "reset_invalid": "This reset link is invalid or has expired. Please request a new one.",
-    "reset_mismatch": "Passwords do not match."
+    "reset_mismatch": "Passwords do not match.",
+    "reset_invalid_length": "Password must be at least 8 characters."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -229,6 +230,7 @@
     "inactive": "Inactive",
     "activate": "Activate",
     "deactivate": "Deactivate",
+    "password": "Password",
     "roles": {
       "admin": "Admin",
       "sales": "Sales",
@@ -246,6 +248,7 @@
   },
   "common": {
     "save": "Save",
+    "required": "This field is required",
     "optional": "optional",
     "cancel": "Cancel",
     "delete": "Delete",

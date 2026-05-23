@@ -37,7 +37,6 @@ export default function StockListPage() {
   const [historyItem, setHistoryItem] = useState<StockItem | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editItem, setEditItem] = useState<StockItem | null>(null);
-  const [scannerOpen, setScannerOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const { data: categoryConfigs = [] } = useShopConfig("category");
@@ -341,7 +340,7 @@ function StockFormDialog({
   onSave: (d: object) => Promise<StockItem>;
 }) {
   const { t } = useTranslation();
-  const { register, handleSubmit, control, formState: { isSubmitting }, reset, setValue } = useForm<FormValues>({ values: item || {} });
+  const { register, handleSubmit, control, formState: { isSubmitting, errors }, reset, setValue } = useForm<FormValues>({ values: item || {} });
   const uploadImage = useUploadStockImage();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -432,7 +431,8 @@ function StockFormDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="name">{t("stock.name")} *</Label>
-              <Input id="name" {...register("name", { required: true })} />
+              <Input id="name" {...register("name", { required: true })} className={errors.name ? "border-destructive" : ""} />
+              {errors.name && <p className="text-xs text-destructive">{t("common.required")}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="name_ta">{t("stock.name_tamil")}</Label>
@@ -487,7 +487,7 @@ function StockFormDialog({
                 rules={{ required: true }}
                 render={({ field }) => (
                   <Select value={field.value || ""} onValueChange={field.onChange}>
-                    <SelectTrigger>
+                    <SelectTrigger className={errors.category ? "border-destructive" : ""}>
                       <SelectValue placeholder={t("stock.select_category")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -496,6 +496,7 @@ function StockFormDialog({
                   </Select>
                 )}
               />
+              {errors.category && <p className="text-xs text-destructive">{t("common.required")}</p>}
             </div>
           </div>
 
@@ -508,7 +509,7 @@ function StockFormDialog({
               rules={{ required: true }}
               render={({ field }) => (
                 <Select value={field.value || ""} onValueChange={field.onChange}>
-                  <SelectTrigger>
+                  <SelectTrigger className={errors.origin_country ? "border-destructive" : ""}>
                     <SelectValue placeholder={t("stock.select_origin")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -517,17 +518,20 @@ function StockFormDialog({
                 </Select>
               )}
             />
+            {errors.origin_country && <p className="text-xs text-destructive">{t("common.required")}</p>}
           </div>
 
           {/* Prices + Quantity row */}
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="cost_price">{t("stock.cost_price")} *</Label>
-              <Input id="cost_price" type="number" step="0.01" min={0} {...register("cost_price", { required: true, valueAsNumber: true })} />
+              <Input id="cost_price" type="number" step="0.01" min={0} {...register("cost_price", { required: true, valueAsNumber: true })} className={errors.cost_price ? "border-destructive" : ""} />
+              {errors.cost_price && <p className="text-xs text-destructive">{t("common.required")}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="selling_price">{t("stock.selling_price")} *</Label>
-              <Input id="selling_price" type="number" step="0.01" min={0} {...register("selling_price", { required: true, valueAsNumber: true })} />
+              <Input id="selling_price" type="number" step="0.01" min={0} {...register("selling_price", { required: true, valueAsNumber: true })} className={errors.selling_price ? "border-destructive" : ""} />
+              {errors.selling_price && <p className="text-xs text-destructive">{t("common.required")}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="quantity">{t("stock.quantity")}</Label>
