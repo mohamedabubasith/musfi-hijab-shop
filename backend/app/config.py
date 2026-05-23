@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     LLM_MODEL: str = "gpt-4o-mini"
     APP_ENV: str = "development"
     FRONTEND_URL: str = "http://localhost:5173"
+    EXTRA_CORS_ORIGINS: str = ""  # comma-separated additional origins
     FIRST_ADMIN_EMAIL: str = "admin@musfishop.com"
     FIRST_ADMIN_PASSWORD: str = "Admin@123"
     DEFAULT_PAGE_SIZE: int = 20

@@ -47,10 +47,31 @@ export default function SettingsPage() {
 
   return (
     <PageWrapper title={t("settings.title")}>
+      {/* Mobile: horizontal tab bar */}
+      <div className="flex sm:hidden gap-1 bg-muted p-1 rounded-lg mb-5 overflow-x-auto">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium whitespace-nowrap transition-all ${
+                activeTab === tab.key
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5 shrink-0" />
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
       <div className="flex gap-6 max-w-4xl">
 
-        {/* Sidebar */}
-        <aside className="w-52 shrink-0 space-y-1">
+        {/* Sidebar — desktop only */}
+        <aside className="hidden sm:block w-52 shrink-0 space-y-1">
           <div className="flex items-center gap-2 px-3 py-2 mb-3">
             <Settings2 className="w-4 h-4 text-muted-foreground" />
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("settings.title")}</span>
