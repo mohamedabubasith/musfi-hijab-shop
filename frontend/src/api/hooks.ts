@@ -14,7 +14,17 @@ export const useDashboardSummary = () =>
   useQuery({ queryKey: ["dashboard", "summary"], queryFn: () => api.get<DashboardSummary>("/dashboard/summary").then((r) => r.data) });
 
 export const useDashboardCharts = () =>
-  useQuery({ queryKey: ["dashboard", "charts"], queryFn: () => api.get<ChartDataPoint[]>("/dashboard/charts").then((r) => r.data) });
+  useQuery({
+    queryKey: ["dashboard", "charts"],
+    queryFn: () =>
+      api.get<ChartDataPoint[]>("/dashboard/charts").then((r) =>
+        (r.data || []).map((d) => ({
+          ...d,
+          revenue: typeof d.revenue === "string" ? parseFloat(d.revenue) : d.revenue,
+          profit: typeof d.profit === "string" ? parseFloat(d.profit) : d.profit,
+        }))
+      ),
+  });
 
 export const useTopItems = () =>
   useQuery({ queryKey: ["dashboard", "top-items"], queryFn: () => api.get<TopItem[]>("/dashboard/top-items").then((r) => r.data) });
@@ -157,6 +167,17 @@ export const useCreateShopConfig = () => {
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ["shop-config", vars.type] });
       qc.invalidateQueries({ queryKey: ["shop-config", "all"] });
+    },
+  });
+};
+
+export const useUpdateShopConfig = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, value, label }: { id: string; value?: string; label?: string }) =>
+      api.patch<ShopConfigItem>(`/shop-config/${id}`, { value, label }).then((r) => r.data),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["shop-config", "threshold"] });
     },
   });
 };

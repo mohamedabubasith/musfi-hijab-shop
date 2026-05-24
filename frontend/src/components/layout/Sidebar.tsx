@@ -18,7 +18,7 @@ const navItems = [
   { key: "reports", path: "/reports", icon: BarChart3, roles: ["admin", "stock_manager"] },
   { key: "ai_advisor", path: "/ai", icon: Bot, roles: ["admin", "sales", "stock_manager"] },
   { key: "users", path: "/users", icon: Users, roles: ["admin"] },
-  { key: "settings", path: "/settings", icon: Settings, roles: ["admin"] },
+  { key: "settings", path: "/settings", icon: Settings, roles: ["admin", "stock_manager"] },
 ];
 
 export function Sidebar() {
