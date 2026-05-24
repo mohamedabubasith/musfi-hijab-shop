@@ -15,8 +15,8 @@ class MetricSummary(BaseModel):
 
 class ChartDataPoint(BaseModel):
     label: str
-    revenue: Decimal
-    profit: Decimal
+    revenue: float
+    profit: float
 
 
 class TopItem(BaseModel):

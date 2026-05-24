@@ -27,7 +27,7 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>((set, get) => ({
-  sidebarOpen: true,
+  sidebarOpen: window.innerWidth >= 1024,
   theme: resolveInitialTheme(),
   themeManual: localStorage.getItem("themeManual") === "true",
   pageTitle: "",

@@ -10,6 +10,7 @@ class ShopConfigCreate(BaseModel):
 
 
 class ShopConfigUpdate(BaseModel):
+    value: str | None = None
     label: str | None = None
     is_active: bool | None = None
 

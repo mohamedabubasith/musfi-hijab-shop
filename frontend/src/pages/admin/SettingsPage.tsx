@@ -1,17 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, Trash2, Tag, Globe, Hash, Settings2, Package } from "lucide-react";
+import { Plus, Trash2, Tag, Globe, Hash, Settings2, Package, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageWrapper } from "@/components/layout/PageWrapper";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { useAllShopConfigs, useCreateShopConfig, useDeleteShopConfig } from "@/api/hooks";
+import { useAllShopConfigs, useCreateShopConfig, useDeleteShopConfig, useUpdateShopConfig, useShopConfig } from "@/api/hooks";
 import { useSkuPrefix } from "@/hooks/useSkuPrefix";
 import { toast } from "@/lib/toast";
 
-type Tab = "category" | "origin" | "sku_prefix";
+type Tab = "category" | "origin" | "sku_prefix" | "threshold";
 
 export default function SettingsPage() {
   const { t } = useTranslation();
@@ -24,6 +24,14 @@ export default function SettingsPage() {
   const [newValue, setNewValue] = useState("");
   const { prefix, updatePrefix } = useSkuPrefix();
   const [prefixInput, setPrefixInput] = useState(prefix);
+  const { data: thresholdConfigs } = useShopConfig("threshold");
+  const thresholdItem = thresholdConfigs?.[0] || null;
+  const [thresholdInput, setThresholdInput] = useState("");
+  const thresholdConfig = useUpdateShopConfig();
+  const setThresholdValue = (v: string) => setThresholdInput(v.replace(/\D/g, ""));
+  useEffect(() => {
+    if (thresholdItem) setThresholdInput(thresholdItem.value);
+  }, [thresholdItem]);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: "category" | "origin" } | null>(null);
 
   const items = activeTab === "category" ? (data?.categories || []) : (data?.origins || []);
@@ -41,6 +49,7 @@ export default function SettingsPage() {
     { key: "category", label: t("settings.categories"), icon: Tag, description: t("settings.category_desc") },
     { key: "origin", label: t("settings.origins"), icon: Globe, description: t("settings.origin_desc") },
     { key: "sku_prefix", label: t("settings.sku_prefix_tab"), icon: Hash, description: t("settings.sku_prefix_desc") },
+    { key: "threshold", label: t("settings.threshold_tab"), icon: AlertTriangle, description: t("settings.threshold_desc") },
   ];
 
   const activeTabInfo = tabs.find((t) => t.key === activeTab)!;
@@ -116,7 +125,7 @@ export default function SettingsPage() {
                       value={prefixInput}
                       onChange={(e) => setPrefixInput(e.target.value.toUpperCase())}
                       placeholder="MUS"
-                      className="font-mono uppercase w-40 text-lg font-bold tracking-widest"
+                      className="font-mono uppercase w-32 sm:w-40 text-lg font-bold tracking-widest"
                       maxLength={10}
                     />
                     <Button
@@ -136,8 +145,51 @@ export default function SettingsPage() {
             </motion.div>
           )}
 
+          {/* Threshold panel */}
+          {activeTab === "threshold" && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+              <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+                <div className="space-y-1.5">
+                  <Label className="text-sm">{t("settings.threshold_label")}</Label>
+                  <p className="text-xs text-muted-foreground">{t("settings.threshold_hint")}</p>
+                  <div className="flex gap-3 mt-2">
+                    <Input
+                      type="number"
+                      min={1}
+                      value={thresholdInput}
+                      onChange={(e) => setThresholdValue(e.target.value)}
+                      className="w-32 text-lg font-bold"
+                    />
+                    <Button
+                      onClick={async () => {
+                        const val = parseInt(thresholdInput, 10);
+                        if (isNaN(val) || val < 1) return;
+                        if (thresholdItem) {
+                          await thresholdConfig.mutateAsync({ id: thresholdItem.id, value: String(val) });
+                        } else {
+                          await create.mutateAsync({ type: "threshold", value: String(val), label: "Low Stock Threshold" });
+                        }
+                        toast.success(t("settings.threshold_saved"));
+                      }}
+                      disabled={!thresholdInput || thresholdConfig.isPending || create.isPending}
+                    >
+                      {t("settings.save_threshold")}
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-muted/50 border border-border">
+                  <AlertTriangle className="w-4 h-4 text-amber-500" />
+                  <span className="text-xs text-muted-foreground">{t("settings.threshold_preview")}</span>
+                  <span className="text-base font-bold text-foreground">
+                    {thresholdInput || "5"}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {/* Category / Origin list + add */}
-          {activeTab !== "sku_prefix" && (
+          {(activeTab === "category" || activeTab === "origin") && (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
 
               {/* List */}
@@ -163,21 +215,21 @@ export default function SettingsPage() {
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, height: 0 }}
                         className={`flex items-center justify-between px-4 py-3 ${i < items.length - 1 ? "border-b border-border" : ""} hover:bg-accent/40 transition-colors group`}
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
                           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                             {activeTab === "category"
                               ? <Tag className="w-3.5 h-3.5 text-primary" />
                               : <Globe className="w-3.5 h-3.5 text-primary" />}
                           </div>
-                          <div>
-                            <p className="text-sm font-medium text-foreground">{item.label}</p>
-                            <p className="text-xs text-muted-foreground font-mono">{item.value}</p>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">{item.label}</p>
+                            <p className="text-xs text-muted-foreground font-mono truncate">{item.value}</p>
                           </div>
                         </div>
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-all"
+                          className="h-8 w-8 p-0 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive shrink-0 transition-all"
                           onClick={() => setDeleteTarget({ id: item.id, type: item.type as "category" | "origin" })}
                           disabled={remove.isPending}
                         >
@@ -194,7 +246,7 @@ export default function SettingsPage() {
                 <h3 className="text-sm font-semibold text-foreground">
                   {activeTab === "category" ? t("settings.add_category") : t("settings.add_origin")}
                 </h3>
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <div className="flex-1 space-y-1">
                     <Label className="text-xs text-muted-foreground">{t("settings.label")}</Label>
                     <Input
@@ -204,7 +256,7 @@ export default function SettingsPage() {
                       onKeyDown={(e) => e.key === "Enter" && handleAdd()}
                     />
                   </div>
-                  <div className="w-36 space-y-1">
+                  <div className="sm:w-36 space-y-1">
                     <Label className="text-xs text-muted-foreground">{t("settings.value_optional")}</Label>
                     <Input
                       placeholder="auto"
@@ -214,7 +266,7 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="flex items-end">
-                    <Button onClick={handleAdd} disabled={!newLabel.trim() || create.isPending}>
+                    <Button onClick={handleAdd} disabled={!newLabel.trim() || create.isPending} className="w-full sm:w-auto">
                       <Plus className="w-4 h-4 mr-1.5" />
                       {t("settings.add")}
                     </Button>

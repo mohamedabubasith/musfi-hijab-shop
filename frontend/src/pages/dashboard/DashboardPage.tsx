@@ -20,10 +20,10 @@ const cardVariants = {
 function RevenueTooltip({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number; color: string }[]; label?: string }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-card border border-border rounded-xl shadow-lg px-3.5 py-2.5 text-xs min-w-[130px]">
+    <div className="bg-card border border-border rounded-xl shadow-lg px-3.5 py-2.5 text-xs min-w-[140px]">
       <p className="font-semibold text-foreground mb-2">{label}</p>
       {payload.map((entry) => (
-        <div key={entry.name} className="flex items-center justify-between gap-4">
+        <div key={entry.name} className="flex items-center justify-between gap-4 py-0.5">
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full" style={{ background: entry.color }} />
             <span className="text-muted-foreground capitalize">{entry.name}</span>
@@ -31,6 +31,14 @@ function RevenueTooltip({ active, payload, label }: { active?: boolean; payload?
           <span className="font-semibold text-foreground">{formatCurrency(entry.value)}</span>
         </div>
       ))}
+      {payload.length === 2 && (
+        <div className="border-t border-border mt-1.5 pt-1.5 flex items-center justify-between gap-4">
+          <span className="text-muted-foreground">Margin</span>
+          <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+            {formatCurrency(payload[0].value - payload[1].value)}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -124,15 +132,15 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="px-2 pt-4 pb-2">
             <ResponsiveContainer width="100%" height={210}>
-              <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="gradRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#C9A84C" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#C9A84C" stopOpacity={0} />
+                    <stop offset="0%" stopColor="#C9A84C" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="#C9A84C" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="gradProfit" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
@@ -156,8 +164,8 @@ export default function DashboardPage() {
                   stroke="#C9A84C"
                   strokeWidth={2.5}
                   fill="url(#gradRevenue)"
-                  dot={false}
-                  activeDot={{ r: 4, fill: "#C9A84C", strokeWidth: 0 }}
+                  dot={{ r: 3, fill: "#C9A84C", strokeWidth: 0 }}
+                  activeDot={{ r: 5, fill: "#C9A84C", strokeWidth: 2, stroke: "#fff" }}
                   animationDuration={1200}
                   animationEasing="ease-out"
                 />
@@ -167,8 +175,8 @@ export default function DashboardPage() {
                   stroke="#10b981"
                   strokeWidth={2.5}
                   fill="url(#gradProfit)"
-                  dot={false}
-                  activeDot={{ r: 4, fill: "#10b981", strokeWidth: 0 }}
+                  dot={{ r: 3, fill: "#10b981", strokeWidth: 0 }}
+                  activeDot={{ r: 5, fill: "#10b981", strokeWidth: 2, stroke: "#fff" }}
                   animationDuration={1400}
                   animationEasing="ease-out"
                 />

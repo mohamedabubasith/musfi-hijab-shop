@@ -16,6 +16,7 @@ from app.models.user import User
 from app.schemas.stock import StockItemCreate, StockItemUpdate, StockItemOut, RestockRequest, StockMovementOut
 from app.services.stock_service import get_stock_item, create_stock_item, restock_item
 from app.utils.pagination import pagination_params, paginate, PaginatedResponse
+from app.utils.settings import get_global_threshold
 
 UPLOADS_DIR = "uploads"
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
@@ -73,11 +74,12 @@ async def get_by_sku(sku: str, db: AsyncSession = Depends(get_db), _=Depends(get
 
 @router.get("/alerts/low", response_model=list[StockItemOut])
 async def low_stock_alerts(db: AsyncSession = Depends(get_db), _=Depends(get_current_user)):
+    threshold = await get_global_threshold(db)
     result = await db.execute(
         select(StockItem).where(
             StockItem.deleted_at == None,
             StockItem.is_active == True,
-            StockItem.quantity <= StockItem.low_stock_threshold,
+            StockItem.quantity <= threshold,
         )
     )
     items = result.scalars().all()

@@ -6,6 +6,7 @@ from sqlalchemy import select, func, extract
 
 from app.database import get_db
 from app.dependencies import get_current_user
+from app.utils.settings import get_global_threshold
 from app.models.sale import Sale, SaleItem
 from app.models.stock import StockItem
 from app.models.delivery import Delivery
@@ -48,11 +49,12 @@ async def summary(db: AsyncSession = Depends(get_db), _=Depends(get_current_user
     pending_deliveries = (await db.execute(
         select(func.count()).select_from(Delivery).where(Delivery.status.in_(["pending", "packed", "in_transit"]))
     )).scalar()
+    threshold = await get_global_threshold(db)
     low_stock = (await db.execute(
         select(func.count()).select_from(StockItem).where(
             StockItem.deleted_at == None,
             StockItem.is_active == True,
-            StockItem.quantity <= StockItem.low_stock_threshold,
+            StockItem.quantity <= threshold,
         )
     )).scalar()
 
@@ -81,7 +83,7 @@ async def charts(db: AsyncSession = Depends(get_db), _=Depends(get_current_user)
         .order_by(Sale.sale_date.desc())
         .limit(30)
     )).all()
-    return [ChartDataPoint(label=str(r.sale_date), revenue=Decimal(str(r.revenue)), profit=Decimal(str(r.profit))) for r in rows]
+    return [ChartDataPoint(label=str(r.sale_date), revenue=float(r.revenue or 0), profit=float(r.profit or 0)) for r in rows]
 
 
 @router.get("/top-items", response_model=list[TopItem])

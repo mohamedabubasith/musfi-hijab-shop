@@ -92,6 +92,9 @@
     "upload_photo": "Upload photo",
     "remove_photo": "Remove",
     "file_too_large": "Image must be under 5 MB",
+    "scan_not_found": "No product found with this barcode",
+    "view_details": "View Details",
+    "created_at": "Created At",
     "categories": {
       "hijab": "Hijab",
       "scarf": "Scarf",
@@ -206,7 +209,14 @@
     "category_desc": "Manage product categories for your inventory",
     "origin_desc": "Manage countries and origin sources for your products",
     "sku_prefix_desc": "Configure the prefix used for all product SKU codes",
-    "preview": "Preview"
+    "preview": "Preview",
+    "threshold_tab": "Low Stock Threshold",
+    "threshold_desc": "Set the global low stock threshold for inventory alerts",
+    "threshold_label": "Low Stock Threshold",
+    "threshold_hint": "Items with quantity at or below this number will be marked as Low Stock",
+    "save_threshold": "Save Threshold",
+    "threshold_saved": "Threshold saved",
+    "threshold_preview": "Items below this quantity will trigger low stock alerts"
   },
   "scanner": {
     "title": "Scan Barcode",
@@ -263,6 +273,7 @@
     "actions": "Actions",
     "search": "Search",
     "filter": "Filter",
+    "filters": "Filters",
     "all": "All",
     "yes": "Yes",
     "no": "No",
@@ -271,7 +282,10 @@
     "page": "Page",
     "of": "of",
     "next": "Next",
-    "prev": "Previous"
+    "prev": "Previous",
+    "margin": "Margin",
+    "active": "Active",
+    "inactive": "Inactive"
   },
   "errors": {
     "not_found": "Page not found",

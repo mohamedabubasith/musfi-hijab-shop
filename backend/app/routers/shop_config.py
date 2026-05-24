@@ -23,7 +23,7 @@ async def list_config(config_type: str, db: AsyncSession = Depends(get_db), _=De
 async def create_config(
     body: ShopConfigCreate,
     db: AsyncSession = Depends(get_db),
-    _=Depends(require_role("admin")),
+    _=Depends(require_role("admin", "stock_manager")),
 ):
     existing = (await db.execute(
         select(ShopConfig).where(ShopConfig.type == body.type, ShopConfig.value == body.value)
@@ -42,7 +42,7 @@ async def update_config(
     config_id: uuid.UUID,
     body: ShopConfigUpdate,
     db: AsyncSession = Depends(get_db),
-    _=Depends(require_role("admin")),
+    _=Depends(require_role("admin", "stock_manager")),
 ):
     result = await db.execute(select(ShopConfig).where(ShopConfig.id == config_id))
     config = result.scalar_one_or_none()

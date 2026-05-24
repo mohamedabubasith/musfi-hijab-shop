@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { Plus, Search, Download, RefreshCw, Edit, Trash2, History, ImagePlus, X, ScanLine } from "lucide-react";
+import { Plus, Search, Download, RefreshCw, Edit, Trash2, History, ImagePlus, X, ScanLine, ListFilter } from "lucide-react";
 import { PageWrapper } from "@/components/layout/PageWrapper";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,11 +15,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   useStock, useLowStock, useRestockItem, useDeleteStock,
   useStockMovements, useCreateStock, useUpdateStock,
-  useShopConfig, useUploadStockImage, fetchStockBySku,
+  useStockItem, useShopConfig, useUploadStockImage, fetchStockBySku,
 } from "@/api/hooks";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "@/lib/toast";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import type { StockItem } from "@/types";
 import { BarcodeScanner } from "@/components/scanner/BarcodeScanner";
 import { getSkuPrefix } from "@/hooks/useSkuPrefix";
@@ -39,6 +39,10 @@ export default function StockListPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editItem, setEditItem] = useState<StockItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [viewItem, setViewItem] = useState<StockItem | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const skuPrefix = getSkuPrefix();
 
   const { data: categoryConfigs = [] } = useShopConfig("category");
   const { data: originConfigs = [] } = useShopConfig("origin");
@@ -53,6 +57,7 @@ export default function StockListPage() {
   const { data, isLoading } = useStock(params);
   const { data: lowStock } = useLowStock();
   const { data: movements } = useStockMovements(historyItem?.id || "");
+  const { data: detail } = useStockItem(viewItem?.id || "");
   const restock = useRestockItem();
   const deleteItem = useDeleteStock();
   const create = useCreateStock();
@@ -63,6 +68,16 @@ export default function StockListPage() {
     await restock.mutateAsync({ id: restockItem.id, data: { quantity: restockQty } });
     setRestockItem(null);
     setRestockQty(1);
+  };
+
+  const handleScan = async (code: string) => {
+    const item = await fetchStockBySku(code);
+    if (!item) {
+      toast.error(t("stock.scan_not_found"));
+      return;
+    }
+    setSearch(item.name);
+    setPage(1);
   };
 
   return (
@@ -82,34 +97,61 @@ export default function StockListPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder={t("stock.search")}
-              className="pl-9"
+              className="pl-9 pr-10"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             />
+            <button
+              type="button"
+              onClick={() => setScannerOpen(true)}
+              title={t("scanner.scan_sku")}
+              className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-md hover:bg-accent transition-colors"
+            >
+              <ScanLine className="w-4 h-4 text-muted-foreground" />
+            </button>
           </div>
-          <Select value={category || "all"} onValueChange={(v) => { setCategory(v === "all" ? "" : v); setPage(1); }}>
-            <SelectTrigger className="w-40"><SelectValue placeholder={t("stock.filter_category")} /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("common.all")}</SelectItem>
-              {categoryConfigs.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Select value={country || "all"} onValueChange={(v) => { setCountry(v === "all" ? "" : v); setPage(1); }}>
-            <SelectTrigger className="w-40"><SelectValue placeholder={t("stock.filter_country")} /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("common.all")}</SelectItem>
-              {originConfigs.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
+
+          {/* Mobile filter toggle */}
+          <button
+            type="button"
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex sm:hidden items-center gap-1.5 px-3 py-2 rounded-md border border-border bg-card text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          >
+            <ListFilter className="w-4 h-4" />
+            {t("common.filters")}
+            {(category || country) && (
+              <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                {(category ? 1 : 0) + (country ? 1 : 0)}
+              </span>
+            )}
+          </button>
+
+          {/* Desktop filters */}
+          <div className="hidden sm:flex gap-2">
+            <Select value={category || "all"} onValueChange={(v) => { setCategory(v === "all" ? "" : v); setPage(1); }}>
+              <SelectTrigger className="w-40"><SelectValue placeholder={t("stock.filter_category")} /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("common.all")}</SelectItem>
+                {categoryConfigs.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={country || "all"} onValueChange={(v) => { setCountry(v === "all" ? "" : v); setPage(1); }}>
+              <SelectTrigger className="w-40"><SelectValue placeholder={t("stock.filter_country")} /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("common.all")}</SelectItem>
+                {originConfigs.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div className="flex gap-2 shrink-0">
-          {canEdit && (
+          {/* {canEdit && (
             <Button size="sm" variant="outline" asChild>
               <a href="/api/v1/stock/export/csv" download>
                 <Download className="w-4 h-4 mr-1" />{t("stock.export_csv")}
               </a>
             </Button>
-          )}
+          )} */}
           {canEdit && (
             <Button size="sm" onClick={() => { setEditItem(null); setFormOpen(true); }}>
               <Plus className="w-4 h-4 mr-1" />{t("stock.add_item")}
@@ -117,6 +159,26 @@ export default function StockListPage() {
           )}
         </div>
       </div>
+
+      {/* Mobile filter panel */}
+      {showFilters && (
+        <div className="flex sm:hidden flex-col gap-2 mb-4">
+          <Select value={category || "all"} onValueChange={(v) => { setCategory(v === "all" ? "" : v); setPage(1); setShowFilters(false); }}>
+            <SelectTrigger><SelectValue placeholder={t("stock.filter_category")} /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("common.all")}</SelectItem>
+              {categoryConfigs.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={country || "all"} onValueChange={(v) => { setCountry(v === "all" ? "" : v); setPage(1); setShowFilters(false); }}>
+            <SelectTrigger><SelectValue placeholder={t("stock.filter_country")} /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("common.all")}</SelectItem>
+              {originConfigs.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* Table */}
       <Card>
@@ -149,7 +211,8 @@ export default function StockListPage() {
                         key={item.id}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="hover:bg-muted/30 transition-colors"
+                        onClick={() => setViewItem(item)}
+                        className="hover:bg-muted/30 transition-colors cursor-pointer"
                       >
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2.5">
@@ -185,7 +248,7 @@ export default function StockListPage() {
                           <div className="flex items-center gap-0.5">
                             {canEdit && (
                               <button
-                                onClick={() => setRestockItem(item)}
+                                onClick={(e) => { e.stopPropagation(); setRestockItem(item); }}
                                 className="p-1.5 hover:bg-accent rounded-md transition-colors"
                                 title={t("stock.restock")}
                               >
@@ -193,7 +256,7 @@ export default function StockListPage() {
                               </button>
                             )}
                             <button
-                              onClick={() => setHistoryItem(item)}
+                              onClick={(e) => { e.stopPropagation(); setHistoryItem(item); }}
                               className="p-1.5 hover:bg-accent rounded-md transition-colors"
                               title={t("stock.movement_history")}
                             >
@@ -201,7 +264,7 @@ export default function StockListPage() {
                             </button>
                             {canEdit && (
                               <button
-                                onClick={() => { setEditItem(item); setFormOpen(true); }}
+                                onClick={(e) => { e.stopPropagation(); setEditItem(item); setFormOpen(true); }}
                                 className="p-1.5 hover:bg-accent rounded-md transition-colors"
                                 title={t("common.edit")}
                               >
@@ -210,7 +273,7 @@ export default function StockListPage() {
                             )}
                             {user?.role === "admin" && (
                               <button
-                                onClick={() => setDeleteTarget(item.id)}
+                                onClick={(e) => { e.stopPropagation(); setDeleteTarget(item.id); }}
                                 className="p-1.5 hover:bg-destructive/10 rounded-md transition-colors"
                                 title={t("common.delete")}
                               >
@@ -300,6 +363,104 @@ export default function StockListPage() {
         </DialogContent>
       </Dialog>
 
+      {/* View Details */}
+      <Dialog open={!!viewItem} onOpenChange={(o) => !o && setViewItem(null)}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t("stock.view_details")}</DialogTitle>
+          </DialogHeader>
+
+          {detail ? (
+            <div className="space-y-5 pt-2">
+              {/* Image */}
+              <div className="flex justify-center">
+                {detail.image_url ? (
+                  <img
+                    src={detail.image_url}
+                    alt={detail.name}
+                    className="w-40 h-40 rounded-xl object-cover border border-border shadow-sm"
+                  />
+                ) : (
+                  <div className="w-40 h-40 rounded-xl border border-border bg-muted flex items-center justify-center">
+                    <ImagePlus className="w-10 h-10 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+
+              {/* Name */}
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-foreground">{detail.name}</h3>
+                {detail.name_ta && (
+                  <p className="text-sm text-muted-foreground mt-0.5">{detail.name_ta}</p>
+                )}
+                <div className="mt-2">
+                  {detail.quantity === 0
+                    ? <Badge variant="destructive">{t("stock.out_of_stock")}</Badge>
+                    : detail.quantity <= detail.low_stock_threshold
+                      ? <Badge variant="warning">{t("stock.low_stock")}</Badge>
+                      : <Badge variant="success">{t("stock.in_stock")}</Badge>}
+                </div>
+              </div>
+
+              <div className="border-t border-border pt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                <div>
+                  <span className="text-muted-foreground">{t("stock.sku")}</span>
+                  <p className="font-medium text-foreground font-mono">{detail.sku || "—"}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t("stock.category")}</span>
+                  <p className="font-medium text-foreground capitalize">{detail.category}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t("stock.origin_source")}</span>
+                  <p className="font-medium text-foreground">{detail.origin_country}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t("stock.selling_price")}</span>
+                  <p className="font-medium text-foreground">{formatCurrency(detail.selling_price)}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t("stock.cost_price")}</span>
+                  <p className="font-medium text-foreground">{formatCurrency(detail.cost_price)}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t("common.margin")}</span>
+                  <p className="font-medium text-green-600 dark:text-green-400">
+                    {formatCurrency(detail.selling_price - detail.cost_price)}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t("stock.quantity")}</span>
+                  <p className={`font-bold ${detail.quantity <= detail.low_stock_threshold ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>
+                    {detail.quantity}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t("stock.threshold")}</span>
+                  <p className="font-medium text-foreground">{detail.low_stock_threshold}</p>
+                </div>
+              </div>
+
+              {detail.description && (
+                <div className="border-t border-border pt-4">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">{t("stock.description")}</span>
+                  <p className="text-sm text-foreground mt-1">{detail.description}</p>
+                </div>
+              )}
+
+              <div className="border-t border-border pt-3 flex items-center justify-between text-xs text-muted-foreground">
+                <span>{t("stock.created_at")}: {formatDate(detail.created_at)}</span>
+                <Badge variant={detail.is_active ? "success" : "secondary"} className="text-xs">
+                  {detail.is_active ? t("common.active") : t("common.inactive")}
+                </Badge>
+              </div>
+            </div>
+          ) : (
+            <div className="py-8 text-center text-sm text-muted-foreground">{t("common.loading")}</div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Add/Edit Form */}
       <StockFormDialog
         open={formOpen}
@@ -322,6 +483,13 @@ export default function StockListPage() {
           setDeleteTarget(null);
         }}
         loading={deleteItem.isPending}
+      />
+
+      <BarcodeScanner
+        open={scannerOpen}
+        prefix={skuPrefix}
+        onScan={handleScan}
+        onClose={() => setScannerOpen(false)}
       />
     </PageWrapper>
   );
@@ -527,8 +695,8 @@ function StockFormDialog({
             {errors.origin_country && <p className="text-xs text-destructive">{t("common.required")}</p>}
           </div>
 
-          {/* Prices + Quantity row */}
-          <div className="grid grid-cols-3 gap-3">
+          {/* Prices + Quantity + Threshold row */}
+          <div className="grid grid-cols-4 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="cost_price">{t("stock.cost_price")} *</Label>
               <Input id="cost_price" type="number" step="0.01" min={0} {...register("cost_price", { required: true, valueAsNumber: true })} className={errors.cost_price ? "border-destructive" : ""} />
@@ -542,6 +710,10 @@ function StockFormDialog({
             <div className="space-y-1.5">
               <Label htmlFor="quantity">{t("stock.quantity")}</Label>
               <Input id="quantity" type="number" defaultValue={0} min={0} {...register("quantity", { valueAsNumber: true })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="low_stock_threshold">{t("stock.threshold")}</Label>
+              <Input id="low_stock_threshold" type="number" min={1} {...register("low_stock_threshold", { valueAsNumber: true, min: 1 })} />
             </div>
           </div>
 

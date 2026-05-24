@@ -11,6 +11,7 @@ from app.config import settings
 from app.models.sale import Sale, SaleItem
 from app.models.stock import StockItem
 from app.models.delivery import Delivery
+from app.utils.settings import get_global_threshold
 
 
 async def build_shop_context(db: AsyncSession) -> str:
@@ -45,10 +46,11 @@ async def build_shop_context(db: AsyncSession) -> str:
     total_stock = (await db.execute(
         select(func.coalesce(func.sum(StockItem.quantity), 0)).where(StockItem.deleted_at == None)
     )).scalar()
+    threshold = await get_global_threshold(db)
     low_stock_items = (await db.execute(
         select(StockItem.name, StockItem.quantity).where(
             StockItem.deleted_at == None,
-            StockItem.quantity <= StockItem.low_stock_threshold,
+            StockItem.quantity <= threshold,
         ).limit(10)
     )).all()
     pending_del = (await db.execute(
