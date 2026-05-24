@@ -63,12 +63,14 @@
 /* Login page gradient — gold to deep black (Musfi brand) */
 .gradient-bg {
   background: linear-gradient(135deg, #3D2B0A 0%, #1A1208 50%, #0D0A06 100%);
+  background-color: #0D0A06;
 }
 
-/* Animated dot pattern */
+/* Animated dot pattern — overlays gradient-bg; must not override background-color */
 .dot-pattern {
-  background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px),
+                    linear-gradient(135deg, #3D2B0A 0%, #1A1208 50%, #0D0A06 100%);
+  background-size: 24px 24px, 100% 100%;
   animation: moveDots 20s linear infinite;
 }
 
