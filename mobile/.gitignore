@@ -1,0 +1,58 @@
+# Flutter/Dart generated
+.dart_tool/
+.build/
+build/
+.generated/
+*.iml
+*.ipr
+*.iws
+
+# Android
+android/.gradle/
+android/app/build/
+android/build/
+local.properties
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Runner.xcworkspace/xcshareddata/
+ios/Runner.xcodeproj/xcuserdata/
+
+# macOS
+macos/Pods/
+macos/.symlinks/
+macos/Flutter/ephemeral/
+macos/Runner.xcworkspace/xcshareddata/
+macos/Runner.xcodeproj/xcuserdata/
+macos/Podfile.lock
+
+# Linux
+linux/flutter/ephemeral/
+
+# Web
+web/fonts/
+
+# Testing
+coverage/
+test/integration/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
+
+# Misc
+*.log
+*.pid

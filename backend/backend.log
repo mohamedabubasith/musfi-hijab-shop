@@ -1,0 +1,25 @@
+INFO:     Will watch for changes in these directories: ['/Users/abu/Abu/sales-tracker/musfi-shop/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [34630] using WatchFiles
+INFO:     Started server process [34636]
+INFO:     Waiting for application startup.
+2026-05-24 15:57:47,632 INFO app.main Database tables ready
+INFO:     Application startup complete.
+INFO:     127.0.0.1:63857 - "GET /health HTTP/1.1" 200 OK
+INFO:     192.168.0.113:64051 - "GET /health HTTP/1.1" 200 OK
+INFO:     192.168.0.106:46876 - "POST /api/v1/auth/login HTTP/1.1" 401 Unauthorized
+INFO:     192.168.0.106:46878 - "POST /api/v1/auth/login HTTP/1.1" 401 Unauthorized
+INFO:     192.168.0.106:46880 - "POST /api/v1/auth/login HTTP/1.1" 401 Unauthorized
+INFO:     192.168.0.113:64454 - "GET /health HTTP/1.1" 200 OK
+INFO:     192.168.0.106:46882 - "POST /api/v1/auth/login HTTP/1.1" 401 Unauthorized
+INFO:     192.168.0.106:46884 - "POST /api/v1/auth/login HTTP/1.1" 401 Unauthorized
+INFO:     192.168.0.106:46886 - "POST /api/v1/auth/login HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:53416 - "GET /api/v1/sales?page=1&page_size=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53433 - "GET /api/v1/stock?page=1&page_size=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53435 - "GET /api/v1/shop-config/category HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53435 - "GET /api/v1/shop-config/origin HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53574 - "GET /api/v1/sales?page=1&page_size=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54720 - "GET /api/v1/health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54737 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54739 - "GET /api/v1/shop-config/category HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:54740 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
