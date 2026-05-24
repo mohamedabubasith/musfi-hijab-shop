@@ -26,13 +26,17 @@ function processQueue(error: unknown, token: string | null) {
 }
 
 // URLs where we suppress automatic error toasts (handled inline by UI)
-const SILENT_PATHS = ["/auth/login", "/auth/refresh"];
+const SILENT_PATHS = ["/auth/login", "/auth/refresh", "/auth/reset-password", "/auth/forgot-password"];
 
 function extractMessage(error: unknown): string {
   if (!axios.isAxiosError(error)) return "An unexpected error occurred";
   const data = error.response?.data as Record<string, unknown> | undefined;
   if (typeof data?.message === "string") return data.message;
   if (typeof data?.detail === "string") return data.detail;
+  if (data?.detail && typeof data.detail === "object" && !Array.isArray(data.detail)) {
+    const d = data.detail as Record<string, unknown>;
+    if (typeof d.message === "string") return d.message;
+  }
   if (Array.isArray(data?.detail)) {
     const first = (data.detail as Array<{ msg?: string }>)[0];
     return first?.msg ?? "Validation error";

@@ -18,6 +18,7 @@ import {
   useShopConfig, useUploadStockImage, fetchStockBySku,
 } from "@/api/hooks";
 import { useAuthStore } from "@/stores/authStore";
+import { toast } from "@/lib/toast";
 import { formatCurrency } from "@/lib/utils";
 import type { StockItem } from "@/types";
 import { BarcodeScanner } from "@/components/scanner/BarcodeScanner";
@@ -372,6 +373,11 @@ function StockFormDialog({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
+    if (f.size > 5 * 1024 * 1024) {
+      toast.error(t("stock.file_too_large"));
+      e.target.value = "";
+      return;
+    }
     setImageFile(f);
     setImagePreview(URL.createObjectURL(f));
   };
@@ -424,7 +430,7 @@ function StockFormDialog({
               )}
               <p className="text-xs text-muted-foreground">JPEG, PNG, WebP · max 5 MB</p>
             </div>
-            <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleFileChange} />
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
           </div>
 
           {/* Name row */}

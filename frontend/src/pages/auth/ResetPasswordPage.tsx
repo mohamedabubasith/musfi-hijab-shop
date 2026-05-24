@@ -30,7 +30,7 @@ export default function ResetPasswordPage() {
       return;
     }
     if (newPassword.length < 8) {
-      setError("Password must be at least 8 characters.");
+      setError(t("auth.reset_invalid_length"));
       return;
     }
 

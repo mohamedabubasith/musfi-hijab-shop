@@ -84,9 +84,8 @@ export default function NewSalePage() {
         delivery_phone: isDelivery ? deliveryPhone : undefined,
       });
       setConfirmed((res as { invoice_number: string }).invoice_number);
-    } catch (e: unknown) {
-      const err = e as { response?: { data?: { detail?: { message?: string } } } };
-      toast.error(err?.response?.data?.detail?.message || t("errors.generic"));
+    } catch {
+      // interceptor already shows the error toast
     }
   };
 
